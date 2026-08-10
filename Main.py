@@ -18,14 +18,15 @@ class Recipe(SQLModel, table=True):
     name: str
     owner: str
     ingredients: list["Ingredient"] = Relationship(link_model=RecipeIngredient)
-
+# Creates engine to link to database
 engine = create_engine("sqlite:///database.db")
+# Creates the database
 SQLModel.metadata.create_all(engine)
 
-
+# Creates default tables in database
 def seed():
     with Session(engine) as session:
-        # Clears the database for now
+        # Clears the database on startup
         session.query(RecipeIngredient).delete()
         session.query(Recipe).delete()
         session.query(Ingredient).delete()
@@ -65,14 +66,16 @@ def seed():
         ]
         )
         session.commit()
-
+# Loads database on startup
 @app.on_event("startup")
 def on_startup():
     seed()
+# Main menu
 @app.get("/")
 async def root():
     return {"Hello World"}
 
+# Ingredients database
 @app.get("/ingredients")
 def get_ingredients():
     with Session(engine) as session:
