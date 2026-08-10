@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel, Field, Session, create_engine, select, Relationship
-from sqlalchemy.orm import selectinload
 # Creates web app object
 app = FastAPI()
 # Creates table for Recipe to Ingredient link, inherits sql model
@@ -73,7 +72,7 @@ def on_startup():
 # Main menu
 @app.get("/")
 async def root():
-    return {"Hello World"}
+    return ["Hello World"]
 
 # Ingredients database
 @app.get("/ingredients")
