@@ -91,18 +91,42 @@ def get_recipes():
         result = []
         # for loop to append formatted data from each recipe to result
         for recipe in recipes:
-            ingredients = session.exec(
-                select(Ingredient)
-                .join(RecipeIngredient)
-                .where(RecipeIngredient.recipe_id == recipe.id)
-            ).all()
         # formatting for current recipe
             result.append({
                 "id": recipe.id,
                 "name": recipe.name,
                 "owner": recipe.owner,
-                "ingredients": ingredients
+                "ingredients": recipe.ingredients
             })
         
         return result
+
+@app.get("/list")
+def get_list():
+    with Session(engine) as session:
+        # Create variables to return
+        totalprice = 0
+        budget = 15
+        budgetmessage = ''
+        # Dictionary we're returning
+        results = {}
+        # Select all recipes, looping through to grab total price
+        recipes = session.exec(select(Recipe)).all()
+        for recipe in recipes:
+            for ingredient in recipe.ingredients:
+                # If ingredient not already on the board we add it to price, and the board
+                if ingredient.name not in results:
+                    results[ingredient.name] = ingredient.price
+                    totalprice += ingredient.price
+        
+        results['Total Price'] = totalprice
+        # Create budget message 
+        if totalprice <= budget:
+            budgetmessage = 'You fit the budget!'
+        else:
+            missing = totalprice - budget
+            budgetmessage = f'You are missing the budget by ${missing:.2f}'
+        results['Budget Message'] = budgetmessage
+        return results
+
 
