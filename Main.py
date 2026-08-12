@@ -26,6 +26,7 @@ SQLModel.metadata.create_all(engine)
 def seed():
     with Session(engine) as session:
         # Clears the database on startup
+        # TO DO, UNCLEAR WHEN DROPPING APP 
         session.query(RecipeIngredient).delete()
         session.query(Recipe).delete()
         session.query(Ingredient).delete()
@@ -102,7 +103,7 @@ def get_recipes():
         return result
 
 @app.post("/list")
-def get_list():
+def create_list(recipe_ids: list[int], budget: float):
     with Session(engine) as session:
         # Create variables to return
         totalprice = 0
@@ -111,16 +112,16 @@ def get_list():
         # Dictionary we're returning
         results = {}
         # Select all recipes, looping through to grab total price
-        recipes = session.exec(select(Recipe)).all()
+        recipes = session.exec(select(Recipe).where(Recipe.id.in_(recipe_ids))).all()
         for recipe in recipes:
             for ingredient in recipe.ingredients:
                 # If ingredient not already on the board we add it to price, and the board
                 if ingredient.name not in results:
                     results[ingredient.name] = ingredient.price
                     totalprice += ingredient.price
-        
+
         results['Total Price'] = totalprice
-        # Create budget message 
+        # Create budget message
         if totalprice <= budget:
             budgetmessage = 'You fit the budget!'
         else:
