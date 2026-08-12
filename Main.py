@@ -6,7 +6,7 @@ app = FastAPI()
 class RecipeIngredient(SQLModel, table=True):
     recipe_id: int = Field(foreign_key="recipe.id", primary_key=True)
     ingredient_id: int = Field(foreign_key="ingredient.id", primary_key=True)
-# Ingredient Table
+# Ingredient Table, TO DO: ADD BRAND TO INGREDIENT AND FIX CURRENT INGREDIENTS TO MATCH
 class Ingredient(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
@@ -73,9 +73,17 @@ def on_startup():
 # Main menu
 @app.get("/")
 async def root():
-    return ["Hello World"]
+    return ["This is grocery list app!!!"]
 
 # Ingredients database
+@app.post("/ingredients")
+def add_ingredients(foodname: str, foodprice: float):
+    with Session(engine) as session:
+        food = Ingredient(name=foodname, price=foodprice)
+        session.add(food)
+        session.commit()
+    return 'Successful add!'
+
 @app.get("/ingredients")
 def get_ingredients():
     with Session(engine) as session:
@@ -83,6 +91,16 @@ def get_ingredients():
         ingredients = session.exec(select(Ingredient)).all()
         return ingredients 
 
+# Recipe database
+@app.post("/recipes")
+def add_recipes(ingredient_ids : list[int], recipe_name : str, owner_name : str):
+    with Session(engine) as session:
+        ingredients = session.exec(select(Ingredient).where(Ingredient.id.in_(ingredient_ids))).all()
+        recipe = Recipe(name = recipe_name, owner=owner_name, ingredients=ingredients)
+        session.add(recipe)
+        session.commit()
+        return 'Successful add!'
+        
 @app.get("/recipes")
 def get_recipes():
     with Session(engine) as session:
@@ -107,7 +125,6 @@ def create_list(recipe_ids: list[int], budget: float):
     with Session(engine) as session:
         # Create variables to return
         totalprice = 0
-        budget = 15
         budgetmessage = ''
         # Dictionary we're returning
         results = {}
