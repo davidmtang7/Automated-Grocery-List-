@@ -101,7 +101,7 @@ def get_recipes():
         
         return result
 
-@app.get("/list")
+@app.post("/list")
 def get_list():
     with Session(engine) as session:
         # Create variables to return
