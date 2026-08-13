@@ -75,7 +75,7 @@ def on_startup():
 async def root():
     return ["This is grocery list app!!!"]
 
-# Ingredients database
+# Adding ingredients
 @app.post("/ingredients")
 def add_ingredients(foodname: str, foodprice: float):
     with Session(engine) as session:
@@ -84,14 +84,24 @@ def add_ingredients(foodname: str, foodprice: float):
         session.commit()
     return 'Successful add!'
 
+# Getting all ingredients
 @app.get("/ingredients")
 def get_ingredients():
     with Session(engine) as session:
         # returns whole ingredient database
         ingredients = session.exec(select(Ingredient)).all()
-        return ingredients 
+        return ingredients
+# Deleting an ingredient 
+@app.delete("/ingredients")
+def del_ingredients(id : int):
+    with Session(engine) as session:
+        deleted = session.exec(select(Ingredient).where(Ingredient.id == id)).first()
+        session.delete(deleted)
+        session.commit()
+    return 'Successful Delete!'
 
-# Recipe database
+
+# Adding a recipe
 @app.post("/recipes")
 def add_recipes(ingredient_ids : list[int], recipe_name : str, owner_name : str):
     with Session(engine) as session:
@@ -100,7 +110,7 @@ def add_recipes(ingredient_ids : list[int], recipe_name : str, owner_name : str)
         session.add(recipe)
         session.commit()
         return 'Successful add!'
-        
+# Getting all recipes
 @app.get("/recipes")
 def get_recipes():
     with Session(engine) as session:
@@ -117,8 +127,19 @@ def get_recipes():
                 "owner": recipe.owner,
                 "ingredients": recipe.ingredients
             })
-        
         return result
+@app.delete("/recipes")
+def del_recipes(id : int):
+    with Session(engine) as session:
+        # Deleting all the ingredient/recipe links
+        links = session.exec(select(RecipeIngredient).where(RecipeIngredient.recipe_id == id)).all()
+        for link in links:
+            session.delete(link)
+        # Deleting the Recipe
+        deleted = session.exec(select(Recipe).where(Recipe.id == id)).first()
+        session.delete(deleted)
+        session.commit()
+    return 'Successful Delete!'
 
 @app.post("/list")
 def create_list(recipe_ids: list[int], budget: float):
@@ -136,7 +157,6 @@ def create_list(recipe_ids: list[int], budget: float):
                 if ingredient.name not in results:
                     results[ingredient.name] = ingredient.price
                     totalprice += ingredient.price
-
         results['Total Price'] = totalprice
         # Create budget message
         if totalprice <= budget:
