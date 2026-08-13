@@ -96,6 +96,8 @@ def get_ingredients():
 def del_ingredients(id : int):
     with Session(engine) as session:
         deleted = session.exec(select(Ingredient).where(Ingredient.id == id)).first()
+        if deleted is None:
+            return 'Ingredient not found'
         session.delete(deleted)
         session.commit()
     return 'Successful Delete!'
@@ -137,6 +139,8 @@ def del_recipes(id : int):
             session.delete(link)
         # Deleting the Recipe
         deleted = session.exec(select(Recipe).where(Recipe.id == id)).first()
+        if deleted is None:
+            return 'Recipe not found'
         session.delete(deleted)
         session.commit()
     return 'Successful Delete!'
