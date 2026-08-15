@@ -1,7 +1,15 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Field, Session, create_engine, select, Relationship
 # Creates web app object
 app = FastAPI()
+# Allows the frontend (running on a different port) to fetch from this backend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Creates table for Recipe to Ingredient link, inherits sql model
 class RecipeIngredient(SQLModel, table=True):
     recipe_id: int = Field(foreign_key="recipe.id", primary_key=True)
