@@ -154,7 +154,7 @@ def del_recipes(id : int):
     return 'Successful Delete!'
 
 @app.post("/list")
-def create_list(recipe_ids: list[int], budget: float):
+def create_list(recipe_ids: list[int] = Query(...), budget: float = 0):
     with Session(engine) as session:
         # Create variables to return
         totalprice = 0

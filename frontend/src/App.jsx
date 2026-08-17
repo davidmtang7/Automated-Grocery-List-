@@ -32,10 +32,10 @@ function RecipeList({ refreshKey }){
       {recipes.map(recipe => (
       <div key={recipe.id} className="ingredient-row">
         <span>
-        {recipe.name}:
+        {recipe.id}: {recipe.name}:
       <ul>
        {recipe.ingredients.map(ingredient => (
-        <li key={ingredient.id}>{ingredient.name}</li>
+        <li key={ingredient.id}>{ingredient.id}: {ingredient.name}</li>
         ))}
         </ul>
         </span>
@@ -153,6 +153,7 @@ function addIngredient(name, price) {
   })
     .then(response => response.json());
 }
+
 function deleteIngredient(id) {
   const params = new URLSearchParams();
   params.append('id', id);
@@ -196,6 +197,84 @@ function AddIngredientForm({ onAdded }) {
   );
 }
 
+function GroceryList(recipeIds, budget){
+    const params = new URLSearchParams()
+    params.append('budget', budget)
+    recipeIds.forEach(id => params.append('recipe_ids', id));
+
+    return fetch(`http://127.0.0.1:8000/list?${params.toString()}`, {
+      method: 'POST'
+    })
+    
+    .then(response => response.json())
+    
+
+  
+}
+function GroceryListForm({onAdded}){
+  const [budget, setBudget] = useState(0)
+  const [recipeIdsText, setRecipeIdsText] = useState('')
+  // holds the generated grocery list once the backend responds - null means "nothing generated yet"
+  const [result, setResult] = useState(null)
+
+    function handleSubmit() {
+    // "1, 3, 4" -> [1, 3, 4]
+    const recipeIds = recipeIdsText
+      .split(',')
+      .map(id => id.trim())
+      .filter(id => id !== '')
+      .map(Number);
+
+    // data here is the actual grocery list object the backend sent back -
+    // we store it in state so it can be rendered, instead of throwing it away
+    GroceryList(recipeIds, budget).then(data => {
+      setResult(data);
+      onAdded();
+    });
+    setBudget(0);
+    setRecipeIdsText('');
+  }
+  return(
+    <div>
+    <input 
+    type="number"
+    placeholder="Budget"
+    value={budget}
+    onChange={e => setBudget(e.target.value)}
+    />
+
+
+    <input
+    type="text"
+    placeholder="Recipe ids, comma separated (e.g. 1,3,4)"
+    value={recipeIdsText}
+    onChange={e => setRecipeIdsText(e.target.value)}
+    />
+    <button onClick={handleSubmit}>Generate Grocery List</button>
+    {result && (
+    <div>
+      <p>{result['Budget Message']}</p>
+      <p>Total: {result['Total Price']}</p>
+     <ul>
+      {Object.entries(result)
+      .filter(([key]) => key !== 'Total Price' && key !== 'Budget Message')
+      .map(([name, price]) => (
+      <li key={name}>{name}: ${price}</li>
+    ))}
+    </ul>
+
+
+
+    </div>
+    )}
+
+
+    </div>
+
+  )
+
+}
+
 function App() {
   // bumping this number tells RecipeList to refetch
   const [refreshKey, setRefreshKey] = useState(0);
@@ -205,6 +284,8 @@ function App() {
       <h1>Recipe list</h1>
       <AddRecipeForm onAdded={() => setRefreshKey(prev => prev + 1)}></AddRecipeForm>
       <RecipeList refreshKey={refreshKey}></RecipeList>
+      <h1>Grocery List</h1>
+      <GroceryListForm onAdded={() => {}}></GroceryListForm>
     </div>
   );
 }
