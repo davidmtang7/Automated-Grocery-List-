@@ -286,6 +286,9 @@ function App() {
       <RecipeList refreshKey={refreshKey}></RecipeList>
       <h1>Grocery List</h1>
       <GroceryListForm onAdded={() => {}}></GroceryListForm>
+      <h1>Ingredient List</h1>
+      <AddIngredientForm onAdded={() => setRefreshKey(prev => prev + 1)}></AddIngredientForm>
+      <IngredientList refreshKey={refreshKey}></IngredientList>
     </div>
   );
 }
