@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Field, Session, create_engine, select, Relationship
 # Creates web app object
@@ -113,7 +113,7 @@ def del_ingredients(id : int):
 
 # Adding a recipe
 @app.post("/recipes")
-def add_recipes(ingredient_ids : list[int], recipe_name : str, owner_name : str):
+def add_recipes(ingredient_ids : list[int] = Query(...), recipe_name : str = "", owner_name : str = ""):
     with Session(engine) as session:
         ingredients = session.exec(select(Ingredient).where(Ingredient.id.in_(ingredient_ids))).all()
         recipe = Recipe(name = recipe_name, owner=owner_name, ingredients=ingredients)
