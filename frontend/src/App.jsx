@@ -32,10 +32,11 @@ function RecipeList({ refreshKey }){
       {recipes.map(recipe => (
       <div key={recipe.id} className="ingredient-row">
         <span>
-        {recipe.id}: {recipe.name}:
-      <ul>
+        
+       <div className="recipe-header"> {recipe.id}: {recipe.name}:</div>
+      <ul className="plain-list">
        {recipe.ingredients.map(ingredient => (
-        <li key={ingredient.id}>{ingredient.id}: {ingredient.name}</li>
+        <li key={ingredient.id}>#{ingredient.id}| {ingredient.name}</li>
         ))}
         </ul>
         </span>
@@ -135,7 +136,7 @@ function IngredientList({ refreshKey }){
     <div>
       {ingredients.map(ingredient => (
         <p key={ingredient.id} className="ingredient-row">
-          <span>{ingredient.name}:  ${ingredient.price}</span>
+          <span>#{ingredient.id}| {ingredient.name}:  ${ingredient.price}</span>
           <button onClick={() => handleDelete(ingredient.id)}>Delete</button>
         </p>
       ))}
@@ -255,22 +256,19 @@ function GroceryListForm({onAdded}){
     <div>
       <p>{result['Budget Message']}</p>
       <p>Total: {result['Total Price']}</p>
-     <ul>
+     <ul className = "plain-list">
       {Object.entries(result)
       .filter(([key]) => key !== 'Total Price' && key !== 'Budget Message')
       .map(([name, price]) => (
       <li key={name}>{name}: ${price}</li>
     ))}
     </ul>
-
-
-
+    
     </div>
+
     )}
 
-
     </div>
-
   )
 
 }
